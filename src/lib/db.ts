@@ -12,7 +12,6 @@ export interface Contact {
   phone: string;
   address: string;
   discountTierId?: number | null;
-  personalDiscountPercent?: number | null;
   isArchived: boolean;
   createdAt: number;
 }

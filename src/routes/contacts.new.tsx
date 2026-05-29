@@ -64,6 +64,7 @@ export function ContactForm({ id }: { id?: number }) {
             onDelete={async (tid) => { await db.discountTiers.delete(tid); }}
           />
         </Field>
+        <div className="flex gap-2 mt-4 mb-6">
           <Link to="/contacts" className="btn-secondary flex-1">Cancel</Link>
           <button onClick={save} className="btn-primary flex-1 h-12">Save</button>
         </div>

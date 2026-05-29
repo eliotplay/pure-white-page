@@ -43,6 +43,27 @@ function Dashboard() {
     const expenses = (await db.expenses.filter((e) => e.date >= startMs).toArray()).reduce((s, e) => s + e.amount, 0);
     const dueCount = orders.filter((o) => o.status === "DUE").length;
 
+    // Growth trajectory: current 7 days net vs prior 7 days net
+    const now = Date.now();
+    const day = 86400000;
+    const week1Start = now - 7 * day;
+    const week2Start = now - 14 * day;
+    const allExpenses = await db.expenses.toArray();
+    const netFor = (from: number, to: number) => {
+      const rev = orders
+        .filter((o) => o.status === "PAID" && o.orderDate >= from && o.orderDate < to)
+        .reduce((s, o) => s + orderRevenue(o.id!), 0);
+      const exp = allExpenses
+        .filter((e) => e.date >= from && e.date < to)
+        .reduce((s, e) => s + e.amount, 0);
+      return rev - exp;
+    };
+    const curNet = netFor(week1Start, now);
+    const prevNet = netFor(week2Start, week1Start);
+    let growthPct: number | null = null;
+    if (prevNet !== 0) growthPct = ((curNet - prevNet) / Math.abs(prevNet)) * 100;
+    else if (curNet !== 0) growthPct = curNet > 0 ? 100 : -100;
+
     const recent = [...orders].sort((a, b) => b.orderDate - a.orderDate).slice(0, 3);
     const contacts = await db.contacts.toArray();
     const recentEnriched = recent.map((o) => ({
@@ -51,7 +72,7 @@ function Dashboard() {
       total: orderRevenue(o.id!),
     }));
 
-    return { revenue, expenses, net: revenue - expenses, dueCount, recent: recentEnriched };
+    return { revenue, expenses, net: revenue - expenses, dueCount, recent: recentEnriched, growthPct };
   }, [], null);
 
   return (
@@ -114,7 +135,13 @@ function Dashboard() {
           <div className="font-bold text-base">{t("financial_health")}</div>
 
           <div className="text-sm text-muted-foreground mt-0.5">
-            Growth trajectory is <span className="italic text-primary font-medium">+12.4%</span> this week
+            {t("growth_trajectory")}{" "}
+            <span className={`italic font-medium ${data && data.growthPct != null && data.growthPct < 0 ? "text-warning" : "text-primary"}`}>
+              {data && data.growthPct != null
+                ? `${data.growthPct >= 0 ? "+" : ""}${data.growthPct.toFixed(1)}%`
+                : "—"}
+            </span>{" "}
+            {t("this_week")}
           </div>
         </div>
       </div>

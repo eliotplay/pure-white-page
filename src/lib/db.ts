@@ -118,80 +118,33 @@ let seeded = false;
 export async function ensureSeed() {
   if (seeded) return;
   seeded = true;
-  const count = await db.contacts.count();
-  if (count > 0) return;
-
-  await db.transaction(
-    "rw",
-    [
-      db.contacts, db.discountTiers, db.productCategories, db.products,
-      db.productTierDiscounts, db.orders, db.orderItems, db.expenseCategories, db.expenses,
-    ],
-    async () => {
-      const resellerId = await db.discountTiers.add({ name: "Reseller", discountPercent: 10 });
-      const vipId = await db.discountTiers.add({ name: "VIP", discountPercent: 15 });
-
-      const minumanId = await db.productCategories.add({ name: "Minuman" });
-      const makananId = await db.productCategories.add({ name: "Makanan" });
-
-      const now = Date.now();
-      const c1 = await db.contacts.add({
-        name: "Budi Santoso", phone: "+62 812 3456 7890", address: "Jl. Mawar 12, Jakarta",
-        discountTierId: resellerId, personalDiscountPercent: null, isArchived: false, createdAt: now,
-      });
-      const c2 = await db.contacts.add({
-        name: "Siti Rahma", phone: "+62 813 9876 5432", address: "Jl. Melati 5, Bandung",
-        discountTierId: null, personalDiscountPercent: 15, isArchived: false, createdAt: now,
-      });
-      await db.contacts.add({
-        name: "Ahmad Fauzi", phone: "+62 821 1122 3344", address: "Jl. Anggrek 8, Surabaya",
-        discountTierId: null, personalDiscountPercent: null, isArchived: false, createdAt: now,
-      });
-      await db.contacts.add({
-        name: "Dewi Lestari", phone: "+62 856 5544 2211", address: "Jl. Kenanga 3, Yogyakarta",
-        discountTierId: null, personalDiscountPercent: null, isArchived: false, createdAt: now,
-      });
-
-      const kopi = await db.products.add({ name: "Kopi Susu", categoryId: minumanId, realPrice: 15000, stockCount: 42, isArchived: false, createdAt: now });
-      const teh = await db.products.add({ name: "Es Teh", categoryId: minumanId, realPrice: 8000, stockCount: -2, isArchived: false, createdAt: now });
-      const nasi = await db.products.add({ name: "Nasi Goreng", categoryId: makananId, realPrice: 25000, stockCount: 15, isArchived: false, createdAt: now });
-      const mie = await db.products.add({ name: "Mie Ayam", categoryId: makananId, realPrice: 20000, stockCount: 0, isArchived: false, createdAt: now });
-
-      await db.productTierDiscounts.bulkAdd([
-        { productId: kopi, tierId: resellerId, discountPercent: 10 },
-        { productId: nasi, tierId: resellerId, discountPercent: 10 },
-      ]);
-
-      // Seed orders
-      const day = 86400000;
-      const o1Date = now - 2 * 60 * 60 * 1000;
-      const o1 = await db.orders.add({
-        contactId: c1, orderDate: o1Date, dueDate: o1Date + 30 * day,
-        status: "DUE", isArchived: false, notes: null,
-      });
-      await db.orderItems.bulkAdd([
-        { orderId: o1, productId: kopi, quantity: 3, unitPrice: 13500, originalUnitPrice: 15000 },
-        { orderId: o1, productId: nasi, quantity: 2, unitPrice: 22500, originalUnitPrice: 25000 },
-      ]);
-
-      const o2Date = now - 5 * 60 * 60 * 1000;
-      const o2 = await db.orders.add({
-        contactId: c2, orderDate: o2Date, dueDate: o2Date + 30 * day,
-        status: "PAID", isArchived: false, notes: null,
-      });
-      await db.orderItems.add({ orderId: o2, productId: teh, quantity: 4, unitPrice: 6800, originalUnitPrice: 8000 });
-
-      // Expenses
-      const rentId = await db.expenseCategories.add({ name: "Rent" });
-      const suppliesId = await db.expenseCategories.add({ name: "Supplies" });
-      await db.expenseCategories.add({ name: "Utilities" });
-      await db.expenses.bulkAdd([
-        { categoryId: rentId, amount: 2500000, date: now - 7 * day, notes: "Monthly rent" },
-        { categoryId: suppliesId, amount: 450000, date: now - 3 * day, notes: "Coffee beans" },
-        { categoryId: suppliesId, amount: 280000, date: now - 1 * day, notes: "Cups & napkins" },
-      ]);
-    },
-  );
+  // Wipe any previously-seeded demo data so users start from a clean slate.
+  const flag = "biztrack_seed_cleared_v1";
+  if (typeof localStorage !== "undefined" && !localStorage.getItem(flag)) {
+    await db.transaction(
+      "rw",
+      [
+        db.contacts, db.discountTiers, db.productCategories, db.products,
+        db.productTierDiscounts, db.orders, db.orderItems, db.restockLogs,
+        db.expenseCategories, db.expenses,
+      ],
+      async () => {
+        await Promise.all([
+          db.contacts.clear(),
+          db.discountTiers.clear(),
+          db.productCategories.clear(),
+          db.products.clear(),
+          db.productTierDiscounts.clear(),
+          db.orders.clear(),
+          db.orderItems.clear(),
+          db.restockLogs.clear(),
+          db.expenseCategories.clear(),
+          db.expenses.clear(),
+        ]);
+      },
+    );
+    localStorage.setItem(flag, "1");
+  }
 }
 
 /* ------- Business logic ------- */

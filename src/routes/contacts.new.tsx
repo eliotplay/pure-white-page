@@ -16,14 +16,15 @@ export function ContactForm({ id }: { id?: number }) {
   const tiers = useLiveQuery(() => db.discountTiers.toArray(), []);
   const existing = useLiveQuery(async () => id ? await db.contacts.get(id) : undefined, [id]);
 
-  const [form, setForm] = useState<Omit<Contact, "id" | "createdAt" | "isArchived" | "personalDiscountPercent">>({
-    name: "", phone: "", address: "", discountTierId: null,
+  const [form, setForm] = useState<Omit<Contact, "id" | "createdAt" | "isArchived">>({
+    name: "", phone: "", address: "", discountTierId: null, personalDiscountPercent: null,
   });
 
   useEffect(() => {
     if (existing) setForm({
       name: existing.name, phone: existing.phone, address: existing.address,
       discountTierId: existing.discountTierId ?? null,
+      personalDiscountPercent: existing.personalDiscountPercent ?? null,
     });
   }, [existing]);
 
@@ -64,6 +65,11 @@ export function ContactForm({ id }: { id?: number }) {
             onDelete={async (tid) => { await db.discountTiers.delete(tid); }}
           />
         </Field>
+        <Field label="Personal Override % (replaces tier)">
+          <input type="number" min={0} max={100} className="input-bz" value={form.personalDiscountPercent ?? ""}
+            onChange={(e) => setForm({ ...form, personalDiscountPercent: e.target.value === "" ? null : Number(e.target.value) })} />
+        </Field>
+
         <div className="flex gap-2 mt-4 mb-6">
           <Link to="/contacts" className="btn-secondary flex-1">Cancel</Link>
           <button onClick={save} className="btn-primary flex-1 h-12">Save</button>

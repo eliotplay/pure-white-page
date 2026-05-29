@@ -12,7 +12,7 @@ export const Route = createFileRoute("/contacts/")({
 
 function ContactsPage() {
   const [q, setQ] = useState("");
-  const [tierFilter, setTierFilter] = useState<number | "ALL">("ALL");
+  const [tierFilter, setTierFilter] = useState<number | "ALL" | "OVERRIDE">("ALL");
 
   const data = useLiveQuery(async () => {
     const contacts = await db.contacts.filter((c) => !c.isArchived).toArray();
@@ -23,6 +23,7 @@ function ContactsPage() {
   const filtered = useMemo(() => {
     if (!data) return [];
     return data.contacts.filter((c) => {
+      if (tierFilter === "OVERRIDE" && c.personalDiscountPercent == null) return false;
       if (typeof tierFilter === "number" && c.discountTierId !== tierFilter) return false;
       if (q && !c.name.toLowerCase().includes(q.toLowerCase())) return false;
       return true;
@@ -42,6 +43,7 @@ function ContactsPage() {
         {data?.tiers.map((t) => (
           <button key={t.id} className={`chip ${tierFilter === t.id ? "chip-active" : ""}`} onClick={() => setTierFilter(t.id!)}>{t.name}</button>
         ))}
+        <button className={`chip ${tierFilter === "OVERRIDE" ? "chip-active" : ""}`} onClick={() => setTierFilter("OVERRIDE")}>Override</button>
       </div>
 
       <div className="label-eyebrow mt-6 mb-3">Directory</div>
@@ -57,7 +59,11 @@ function ContactsPage() {
               <div className="flex-1 min-w-0">
                 <div className="font-bold truncate">{c.name}</div>
                 <div className="mt-1 inline-flex">
-                  {tier ? (
+                  {c.personalDiscountPercent != null ? (
+                    <span className="text-[10px] font-bold tracking-widest uppercase bg-primary/15 text-primary px-2 py-0.5 rounded">
+                      Override: {c.personalDiscountPercent}%
+                    </span>
+                  ) : tier ? (
                     <span className="text-[10px] font-bold tracking-widest uppercase bg-primary/15 text-primary px-2 py-0.5 rounded">
                       Tier: {tier.name}
                     </span>

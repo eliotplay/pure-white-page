@@ -53,7 +53,7 @@ function ContactDetail() {
         </div>
         <div className="mt-3 font-bold text-xl">{c.name}</div>
         <div className="mt-1 text-xs text-muted-foreground italic">
-          {data.tier ? `Tier: ${data.tier.name} (${data.tier.discountPercent}%)` : "General customer"}
+          {c.personalDiscountPercent != null ? `Override: ${c.personalDiscountPercent}%` : data.tier ? `Tier: ${data.tier.name} (${data.tier.discountPercent}%)` : "General customer"}
         </div>
         <div className="flex items-center justify-center gap-4 mt-4 text-sm">
           <span className="flex items-center gap-1.5 text-muted-foreground"><Phone size={14} /> {c.phone}</span>

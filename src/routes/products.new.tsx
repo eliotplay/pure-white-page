@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { AppShell } from "@/components/AppShell";
 import { ArrowLeft, Plus, X } from "lucide-react";
 import { CategoryPicker } from "@/components/CategoryPicker";
+import { MoneyInput } from "@/components/MoneyInput";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/products/new")({
@@ -82,8 +83,12 @@ export function ProductForm({ id }: { id?: number }) {
           />
         </Field>
 
-        <Field label={`${t("real_price")} (Rp)`}><input type="number" className="input-bz" value={realPrice} onChange={(e) => setRealPrice(e.target.value)} /></Field>
-        <Field label={t("stock_count")}><input type="number" className="input-bz" value={stockCount} onChange={(e) => setStockCount(e.target.value)} /></Field>
+        <Field label={`${t("real_price")} (Rp)`}>
+          <MoneyInput value={realPrice} onChange={setRealPrice} placeholder="0" />
+        </Field>
+        <Field label={t("stock_count")}>
+          <input type="number" className="input-bz" value={stockCount} onChange={(e) => setStockCount(e.target.value)} />
+        </Field>
 
         <div>
           <div className="flex items-center justify-between mb-2">

@@ -112,7 +112,7 @@ export function TierPicker({ value, onChange, items, onCreate, onDelete, placeho
               <div className="flex gap-2">
                 <input
                   autoFocus
-                  className="input-bz flex-1"
+                  className="input-bz flex-1 min-w-0 text-foreground"
                   style={{ height: 44 }}
                   placeholder={t("tier")}
                   value={name}
@@ -120,7 +120,7 @@ export function TierPicker({ value, onChange, items, onCreate, onDelete, placeho
                 />
                 <input
                   type="number"
-                  className="input-bz w-20"
+                  className="input-bz w-20 text-foreground"
                   style={{ height: 44 }}
                   placeholder="%"
                   value={pct}

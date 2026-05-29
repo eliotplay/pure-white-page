@@ -20,6 +20,7 @@ export interface Contact {
 export interface ProductCategory {
   id?: number;
   name: string;
+  icon?: string;
 }
 
 export interface Product {
@@ -30,6 +31,7 @@ export interface Product {
   stockCount: number;
   isArchived: boolean;
   createdAt: number;
+  icon?: string;
 }
 
 export interface ProductTierDiscount {

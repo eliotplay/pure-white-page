@@ -93,7 +93,7 @@ export function ProductForm({ id }: { id?: number }) {
             value={categoryId}
             onChange={setCategoryId}
             items={cats}
-            onCreate={async (n) => await db.productCategories.add({ name: n })}
+            onCreate={async (n, ic) => await db.productCategories.add({ name: n, icon: ic })}
             onDelete={async (cid) => { await db.productCategories.delete(cid); }}
           />
         </Field>

@@ -5,7 +5,6 @@ import { db, type Contact } from "@/lib/db";
 import { AppShell } from "@/components/AppShell";
 import { ArrowLeft } from "lucide-react";
 import { TierPicker } from "@/components/TierPicker";
-import { MoneyInput } from "@/components/MoneyInput";
 
 export const Route = createFileRoute("/contacts/new")({
   head: () => ({ meta: [{ title: "New Contact — BizTrack" }] }),

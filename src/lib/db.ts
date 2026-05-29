@@ -155,9 +155,6 @@ export async function resolveUnitPrice(productId: number, contactId: number): Pr
   const contact = await db.contacts.get(contactId);
   if (!contact) return { unit: original, original };
 
-  if (contact.personalDiscountPercent != null) {
-    return { unit: round(original * (1 - contact.personalDiscountPercent / 100)), original };
-  }
   if (contact.discountTierId) {
     const tierDiscount = await db.productTierDiscounts
       .where({ productId, tierId: contact.discountTierId }).first();

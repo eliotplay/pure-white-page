@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { db, type Contact } from "@/lib/db";
 import { AppShell } from "@/components/AppShell";
 import { ArrowLeft } from "lucide-react";
+import { TierPicker } from "@/components/TierPicker";
 
 export const Route = createFileRoute("/contacts/new")({
   head: () => ({ meta: [{ title: "New Contact — BizTrack" }] }),
@@ -56,10 +57,13 @@ export function ContactForm({ id }: { id?: number }) {
           <textarea className="input-bz py-3" style={{ height: 96 }} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
         </Field>
         <Field label="Discount Tier">
-          <select className="input-bz" value={form.discountTierId ?? ""} onChange={(e) => setForm({ ...form, discountTierId: e.target.value ? Number(e.target.value) : null })}>
-            <option value="">— None —</option>
-            {tiers?.map((t) => <option key={t.id} value={t.id}>{t.name} ({t.discountPercent}%)</option>)}
-          </select>
+          <TierPicker
+            value={form.discountTierId ?? ""}
+            onChange={(id) => setForm({ ...form, discountTierId: id === "" ? null : id })}
+            items={tiers}
+            onCreate={async (n, p) => await db.discountTiers.add({ name: n, discountPercent: p })}
+            onDelete={async (tid) => { await db.discountTiers.delete(tid); }}
+          />
         </Field>
         <Field label="Personal Override % (replaces tier)">
           <input type="number" min={0} max={100} className="input-bz" value={form.personalDiscountPercent ?? ""}

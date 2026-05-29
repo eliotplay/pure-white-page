@@ -3,7 +3,9 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { useState, useMemo } from "react";
 import { db, formatRp } from "@/lib/db";
 import { AppShell, FAB } from "@/components/AppShell";
-import { ArrowLeft, Plus, X } from "lucide-react";
+import { ArrowLeft, Plus } from "lucide-react";
+import { CategoryPicker } from "@/components/CategoryPicker";
+import { MoneyInput } from "@/components/MoneyInput";
 
 export const Route = createFileRoute("/expenses")({
   head: () => ({ meta: [{ title: "Expenses — BizTrack" }] }),
@@ -70,15 +72,12 @@ function Expenses() {
 function AddExpense({ onClose, cats }: { onClose: () => void; cats: { id?: number; name: string }[] }) {
   const [amount, setAmount] = useState("");
   const [categoryId, setCategoryId] = useState<number | "">("");
-  const [newCat, setNewCat] = useState("");
-  const [newCatMode, setNewCatMode] = useState(false);
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [notes, setNotes] = useState("");
 
   async function save() {
     if (!amount) return;
-    let cid = categoryId;
-    if (newCatMode && newCat.trim()) cid = await db.expenseCategories.add({ name: newCat.trim() });
+    const cid = categoryId;
     if (cid === "" || cid == null) return;
     await db.expenses.add({
       categoryId: Number(cid), amount: Number(amount),
@@ -92,21 +91,15 @@ function AddExpense({ onClose, cats }: { onClose: () => void; cats: { id?: numbe
       <div className="bg-surface w-full rounded-t-3xl p-5 flex flex-col gap-3" onClick={(e) => e.stopPropagation()}>
         <div className="h-1 w-10 bg-border rounded-full mx-auto" />
         <div className="font-bold text-lg">Add Expense</div>
-        <input type="number" placeholder="Amount" className="input-bz" autoFocus value={amount} onChange={(e) => setAmount(e.target.value)} />
-        {!newCatMode ? (
-          <div className="flex gap-2">
-            <select className="input-bz flex-1" value={categoryId} onChange={(e) => setCategoryId(e.target.value ? Number(e.target.value) : "")}>
-              <option value="">— Category —</option>
-              {cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-            <button className="btn-secondary" onClick={() => setNewCatMode(true)}><Plus size={16} /></button>
-          </div>
-        ) : (
-          <div className="flex gap-2">
-            <input className="input-bz flex-1" placeholder="New category" value={newCat} onChange={(e) => setNewCat(e.target.value)} />
-            <button className="btn-secondary" onClick={() => setNewCatMode(false)}><X size={16} /></button>
-          </div>
-        )}
+        <MoneyInput placeholder="Amount" autoFocus value={amount} onChange={setAmount} />
+        <CategoryPicker
+          value={categoryId}
+          onChange={setCategoryId}
+          items={cats}
+          onCreate={async (n) => await db.expenseCategories.add({ name: n })}
+          onDelete={async (cid) => { await db.expenseCategories.delete(cid); }}
+          placeholder="— Category —"
+        />
         <input type="date" className="input-bz" value={date} onChange={(e) => setDate(e.target.value)} />
         <input placeholder="Notes" className="input-bz" value={notes} onChange={(e) => setNotes(e.target.value)} />
         <button onClick={save} className="btn-primary w-full mt-2">Save</button>

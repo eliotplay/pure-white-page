@@ -130,6 +130,10 @@
 }
 .input-bz:focus { border-color: var(--primary); }
 .input-bz::placeholder { color: var(--muted-foreground); }
+/* Hide native number input spinners across the app */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 .label-eyebrow {
   font-size: 11px; font-weight: 600; letter-spacing: 0.12em;
   text-transform: uppercase; color: var(--muted-foreground);

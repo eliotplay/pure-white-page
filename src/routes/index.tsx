@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useLiveQuery } from "dexie-react-hooks";
+import { useEffect, useState } from "react";
 import { db, formatRp, formatRpShort } from "@/lib/db";
 import { AppShell, StatusBadge } from "@/components/AppShell";
 import { Wallet, TrendingUp, AlertCircle, User } from "lucide-react";
@@ -25,6 +26,8 @@ function greetingKey(): string {
 
 function Dashboard() {
   const { t, username } = useI18n();
+  const [greet, setGreet] = useState<string>("");
+  useEffect(() => { setGreet(t(greetingKey())); }, [t]);
 
   const data = useLiveQuery(async () => {
     const start = new Date(); start.setDate(1); start.setHours(0, 0, 0, 0);
@@ -56,7 +59,7 @@ function Dashboard() {
       <section className="pt-4 pb-2">
         <div className="label-eyebrow">{t("welcome")}</div>
         <h1 className="text-[32px] leading-[38px] font-bold mt-1">
-          {t(greetingKey())}, <span className="italic font-medium">{username}</span>
+          {greet || "\u00A0"}, <span className="italic font-medium">{username}</span>
         </h1>
       </section>
 

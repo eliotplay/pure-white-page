@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { db } from "@/lib/db";
 import { AppShell } from "@/components/AppShell";
 import { ArrowLeft, Plus, X } from "lucide-react";
+import { CategoryPicker } from "@/components/CategoryPicker";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/products/new")({
   head: () => ({ meta: [{ title: "New Product — BizTrack" }] }),
@@ -11,6 +13,7 @@ export const Route = createFileRoute("/products/new")({
 });
 
 export function ProductForm({ id }: { id?: number }) {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const cats = useLiveQuery(() => db.productCategories.toArray(), []);
   const tiers = useLiveQuery(() => db.discountTiers.toArray(), []);
@@ -19,8 +22,6 @@ export function ProductForm({ id }: { id?: number }) {
 
   const [name, setName] = useState("");
   const [categoryId, setCategoryId] = useState<number | "">("");
-  const [newCatMode, setNewCatMode] = useState(false);
-  const [newCat, setNewCat] = useState("");
   const [realPrice, setRealPrice] = useState("");
   const [stockCount, setStockCount] = useState("0");
   const [discs, setDiscs] = useState<{ tierId: number | ""; pct: string }[]>([]);
@@ -39,8 +40,7 @@ export function ProductForm({ id }: { id?: number }) {
 
   async function save() {
     if (!name.trim() || !realPrice) return;
-    let catId = categoryId;
-    if (newCatMode && newCat.trim()) catId = await db.productCategories.add({ name: newCat.trim() });
+    const catId = categoryId;
     if (catId === "" || catId == null) return;
     const payload = {
       name: name.trim(), categoryId: Number(catId),
@@ -66,44 +66,37 @@ export function ProductForm({ id }: { id?: number }) {
     <AppShell hideNav>
       <header className="flex items-center gap-3 pt-3 pb-2">
         <Link to="/products" className="text-primary"><ArrowLeft size={24} /></Link>
-        <h1 className="text-xl font-bold">{id ? "Edit Product" : "New Product"}</h1>
+        <h1 className="text-xl font-bold">{id ? t("edit_product") : t("new_product")}</h1>
       </header>
 
       <div className="mt-6 flex flex-col gap-4">
-        <Field label="Name"><input className="input-bz" value={name} onChange={(e) => setName(e.target.value)} /></Field>
+        <Field label={t("name")}><input className="input-bz" value={name} onChange={(e) => setName(e.target.value)} /></Field>
 
-        <Field label="Category">
-          {!newCatMode ? (
-            <div className="flex gap-2">
-              <select className="input-bz flex-1" value={categoryId} onChange={(e) => setCategoryId(e.target.value ? Number(e.target.value) : "")}>
-                <option value="">— Select —</option>
-                {cats?.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-              <button className="btn-secondary" onClick={() => setNewCatMode(true)}><Plus size={16} /></button>
-            </div>
-          ) : (
-            <div className="flex gap-2">
-              <input className="input-bz flex-1" placeholder="New category" value={newCat} onChange={(e) => setNewCat(e.target.value)} />
-              <button className="btn-secondary" onClick={() => { setNewCatMode(false); setNewCat(""); }}><X size={16} /></button>
-            </div>
-          )}
+        <Field label={t("category")}>
+          <CategoryPicker
+            value={categoryId}
+            onChange={setCategoryId}
+            items={cats}
+            onCreate={async (n) => await db.productCategories.add({ name: n })}
+            onDelete={async (cid) => { await db.productCategories.delete(cid); }}
+          />
         </Field>
 
-        <Field label="Real Price (Rp)"><input type="number" className="input-bz" value={realPrice} onChange={(e) => setRealPrice(e.target.value)} /></Field>
-        <Field label="Stock Count"><input type="number" className="input-bz" value={stockCount} onChange={(e) => setStockCount(e.target.value)} /></Field>
+        <Field label={`${t("real_price")} (Rp)`}><input type="number" className="input-bz" value={realPrice} onChange={(e) => setRealPrice(e.target.value)} /></Field>
+        <Field label={t("stock_count")}><input type="number" className="input-bz" value={stockCount} onChange={(e) => setStockCount(e.target.value)} /></Field>
 
         <div>
           <div className="flex items-center justify-between mb-2">
-            <span className="label-eyebrow">Tier Discounts</span>
+            <span className="label-eyebrow">{t("tier_discounts")}</span>
             <button onClick={() => setDiscs([...discs, { tierId: "", pct: "" }])} className="text-primary text-xs font-bold tracking-wider uppercase flex items-center gap-1">
-              <Plus size={12} /> Add
+              <Plus size={12} /> {t("add")}
             </button>
           </div>
           <div className="flex flex-col gap-2">
             {discs.map((d, i) => (
               <div key={i} className="flex gap-2">
                 <select className="input-bz flex-1" value={d.tierId} onChange={(e) => setDiscs(discs.map((x, j) => j === i ? { ...x, tierId: e.target.value ? Number(e.target.value) : "" } : x))}>
-                  <option value="">— Tier —</option>
+                  <option value="">— {t("tier")} —</option>
                   {tiers?.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
                 </select>
                 <input type="number" placeholder="%" className="input-bz w-24" value={d.pct} onChange={(e) => setDiscs(discs.map((x, j) => j === i ? { ...x, pct: e.target.value } : x))} />
@@ -114,8 +107,8 @@ export function ProductForm({ id }: { id?: number }) {
         </div>
 
         <div className="flex gap-2 mt-4 mb-6">
-          <Link to="/products" className="btn-secondary flex-1">Cancel</Link>
-          <button onClick={save} className="btn-primary flex-1 h-12">Save</button>
+          <Link to="/products" className="btn-secondary flex-1">{t("cancel")}</Link>
+          <button onClick={save} className="btn-primary flex-1 h-12">{t("save")}</button>
         </div>
       </div>
     </AppShell>

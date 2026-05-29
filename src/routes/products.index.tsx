@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { db, formatRp } from "@/lib/db";
 import { AppShell, FAB } from "@/components/AppShell";
 import { Plus, Package, TrendingUp, ClipboardCheck } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/products/")({
   head: () => ({ meta: [{ title: "Products — BizTrack" }] }),
@@ -11,6 +12,7 @@ export const Route = createFileRoute("/products/")({
 });
 
 function ProductsPage() {
+  const { t } = useI18n();
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<number | "ALL">("ALL");
 
@@ -37,21 +39,21 @@ function ProductsPage() {
 
   return (
     <AppShell>
-      <h1 className="text-[28px] font-bold pt-5 pb-1">Inventory</h1>
-      <p className="text-sm text-muted-foreground mb-4">Manage your product catalog and stock levels.</p>
+      <h1 className="text-[28px] font-bold pt-5 pb-1">{t("inventory")}</h1>
+      <p className="text-sm text-muted-foreground mb-4">{t("product_list")}</p>
 
       <div className="relative">
-        <input className="input-bz" placeholder="Search products…" value={q} onChange={(e) => setQ(e.target.value)} />
+        <input className="input-bz" placeholder={t("search_products")} value={q} onChange={(e) => setQ(e.target.value)} />
       </div>
 
       <div className="flex gap-5 mt-5 overflow-x-auto scrollbar-none">
-        <button onClick={() => setCat("ALL")} className={`text-xs font-bold tracking-widest uppercase pb-1 border-b-2 ${cat === "ALL" ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}>All</button>
+        <button onClick={() => setCat("ALL")} className={`text-xs font-bold tracking-widest uppercase pb-1 border-b-2 ${cat === "ALL" ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}>{t("all")}</button>
         {data?.categories.map((c) => (
           <button key={c.id} onClick={() => setCat(c.id!)} className={`text-xs font-bold tracking-widest uppercase pb-1 border-b-2 whitespace-nowrap ${cat === c.id ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}>{c.name}</button>
         ))}
       </div>
 
-      <div className="label-eyebrow mt-6 mb-3">Product List</div>
+      <div className="label-eyebrow mt-6 mb-3">{t("product_list")}</div>
 
       <div className="flex flex-col gap-3">
         {filtered.map((p) => (
@@ -64,7 +66,7 @@ function ProductsPage() {
               <div className="text-primary text-sm font-semibold mt-0.5">{formatRp(p.realPrice)}</div>
             </div>
             <div className="text-right shrink-0">
-              <div className="label-eyebrow">Stock</div>
+              <div className="label-eyebrow">{t("stock")}</div>
               <div className={`text-lg font-bold ${p.stockCount < 0 ? "text-warning" : p.stockCount === 0 ? "text-muted-foreground" : "text-foreground"}`}>{p.stockCount}</div>
             </div>
           </Link>
@@ -75,13 +77,13 @@ function ProductsPage() {
         <div className="grid grid-cols-2 gap-3 mt-5 mb-4">
           <div className="card-bz border-primary/30">
             <TrendingUp size={18} className="text-primary" />
-            <div className="label-eyebrow mt-3">Best Seller</div>
+            <div className="label-eyebrow mt-3">{t("best_seller")}</div>
             <div className="font-bold mt-1 truncate">{data.best?.name ?? "—"}</div>
           </div>
           <div className="card-bz">
             <ClipboardCheck size={18} className="text-muted-foreground" />
-            <div className="label-eyebrow mt-3">Low Stock</div>
-            <div className="font-bold mt-1">{data.lowStock} Items</div>
+            <div className="label-eyebrow mt-3">{t("low_stock")}</div>
+            <div className="font-bold mt-1">{data.lowStock} {t("items")}</div>
           </div>
         </div>
       )}

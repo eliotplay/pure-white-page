@@ -41,6 +41,9 @@ const dict: Record<Lang, Record<string, string>> = {
     "delete_category_warn": "Products using it will keep their data.",
     "manage_categories": "Manage categories",
     "manage": "Manage", "done": "Done",
+    "icon": "Icon (Emoji)", "icon_help": "Optional emoji",
+    "filter_all": "All", "growth_trajectory": "Growth trajectory",
+    "this_week": "this week", "quantity": "Quantity",
   },
   ID: {
     "nav.home": "Beranda", "nav.orders": "Pesanan", "nav.contacts": "Klien",
@@ -80,6 +83,9 @@ const dict: Record<Lang, Record<string, string>> = {
     "delete_category_warn": "Produk yang memakainya tetap aman.",
     "manage_categories": "Kelola kategori",
     "manage": "Kelola", "done": "Selesai",
+    "icon": "Ikon (Emoji)", "icon_help": "Emoji opsional",
+    "filter_all": "Semua", "growth_trajectory": "Pertumbuhan",
+    "this_week": "minggu ini", "quantity": "Jumlah",
   },
 };
 

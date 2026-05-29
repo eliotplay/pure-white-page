@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { db, formatRp, createOrder, resolveUnitPrice } from "@/lib/db";
 import { AppShell } from "@/components/AppShell";
 import { ArrowLeft, ChevronDown, Plus, Minus, Sparkles, Receipt } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/orders/new")({
   head: () => ({ meta: [{ title: "New Order — BizTrack" }] }),
@@ -14,8 +15,10 @@ type Line = { productId: number; quantity: number; unit: number; original: numbe
 
 function NewOrder() {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const contacts = useLiveQuery(() => db.contacts.filter((c) => !c.isArchived).toArray(), []);
   const products = useLiveQuery(() => db.products.filter((p) => !p.isArchived).toArray(), []);
+  const categories = useLiveQuery(() => db.productCategories.toArray(), []);
 
   const [contactId, setContactId] = useState<number | null>(null);
   const [contactQ, setContactQ] = useState("");
@@ -23,6 +26,7 @@ function NewOrder() {
   const [lines, setLines] = useState<Line[]>([]);
   const [showProductPicker, setShowProductPicker] = useState(false);
   const [productQ, setProductQ] = useState("");
+  const [filterCatId, setFilterCatId] = useState<number | "all">("all");
   const [receiptId, setReceiptId] = useState<number | null>(null);
 
   const selectedContact = contacts?.find((c) => c.id === contactId) ?? null;
@@ -47,8 +51,11 @@ function NewOrder() {
 
   const filteredProducts = useMemo(() => {
     if (!products) return [];
-    return products.filter((p) => p.name.toLowerCase().includes(productQ.toLowerCase()));
-  }, [products, productQ]);
+    return products.filter((p) => {
+      if (filterCatId !== "all" && p.categoryId !== filterCatId) return false;
+      return p.name.toLowerCase().includes(productQ.toLowerCase());
+    });
+  }, [products, productQ, filterCatId]);
 
   const subtotal = lines.reduce((s, l) => s + l.original * l.quantity, 0);
   const grand = lines.reduce((s, l) => s + l.unit * l.quantity, 0);
@@ -134,7 +141,7 @@ function NewOrder() {
             return (
               <div key={l.productId} className="card-bz flex items-center gap-3">
                 <div className="h-14 w-14 rounded-xl bg-surface-elevated border border-border grid place-items-center text-lg shrink-0">
-                  🍽️
+                  {p.icon || "🍽️"}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-bold truncate">{p.name}</div>
@@ -143,7 +150,17 @@ function NewOrder() {
                 <div className="text-right shrink-0">
                   <div className="inline-flex items-center gap-2 bg-surface-elevated border border-border rounded-full px-2 py-1">
                     <button onClick={() => setQty(l.productId, l.quantity - 1)} className="h-7 w-7 grid place-items-center text-muted-foreground"><Minus size={14} /></button>
-                    <span className="w-6 text-center font-bold">{l.quantity}</span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={l.quantity}
+                      onChange={(e) => {
+                        const v = e.target.value.replace(/[^\d]/g, "");
+                        setQty(l.productId, v === "" ? 0 : Number(v));
+                      }}
+                      className="w-8 text-center font-bold bg-transparent outline-none"
+                      aria-label={t("quantity")}
+                    />
                     <button onClick={() => setQty(l.productId, l.quantity + 1)} className="h-7 w-7 grid place-items-center text-muted-foreground"><Plus size={14} /></button>
                   </div>
                   <div className="text-primary font-bold mt-1.5">{formatRp(l.unit * l.quantity)}</div>
@@ -192,20 +209,41 @@ function NewOrder() {
       </div>
 
       {showProductPicker && (
-        <div className="fixed inset-0 z-50 bg-black/70 flex items-end max-w-md mx-auto" onClick={() => setShowProductPicker(false)}>
-          <div className="bg-surface w-full rounded-t-3xl p-5 max-h-[80vh] flex flex-col gap-3" onClick={(e) => e.stopPropagation()}>
-            <div className="h-1 w-10 bg-border rounded-full mx-auto" />
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-start justify-center px-4 pt-8 max-w-md mx-auto" onClick={() => setShowProductPicker(false)}>
+          <div className="bg-surface w-full rounded-3xl p-5 max-h-[80dvh] flex flex-col gap-3 shadow-2xl border border-border" onClick={(e) => e.stopPropagation()}>
             <div className="font-bold text-lg">Add Product</div>
             <div className="relative">
               <input className="input-bz" placeholder="Search products…" value={productQ} onChange={(e) => setProductQ(e.target.value)} autoFocus />
+            </div>
+            <div className="flex gap-2 overflow-x-auto -mx-1 px-1 pb-1">
+              <button
+                onClick={() => setFilterCatId("all")}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border ${filterCatId === "all" ? "bg-primary text-primary-foreground border-primary" : "bg-surface-elevated border-border text-muted-foreground"}`}
+              >
+                {t("filter_all")}
+              </button>
+              {categories?.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => setFilterCatId(c.id!)}
+                  className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border ${filterCatId === c.id ? "bg-primary text-primary-foreground border-primary" : "bg-surface-elevated border-border text-muted-foreground"}`}
+                >
+                  {c.icon ? `${c.icon} ` : ""}{c.name}
+                </button>
+              ))}
             </div>
             <div className="flex-1 overflow-y-auto flex flex-col gap-2">
               {filteredProducts.map((p) => (
                 <button key={p.id} onClick={() => addProduct(p.id!)}
                   className="card-bz text-left flex items-center justify-between">
-                  <div>
-                    <div className="font-bold">{p.name}</div>
-                    <div className="text-xs text-primary mt-0.5">{formatRp(p.realPrice)}</div>
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-lg bg-surface-elevated border border-border grid place-items-center text-base">
+                      {p.icon || "🍽️"}
+                    </div>
+                    <div>
+                      <div className="font-bold">{p.name}</div>
+                      <div className="text-xs text-primary mt-0.5">{formatRp(p.realPrice)}</div>
+                    </div>
                   </div>
                   <div className="text-xs text-muted-foreground">Stock: <span className={p.stockCount < 0 ? "text-warning" : ""}>{p.stockCount}</span></div>
                 </button>

@@ -2,13 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { Check, ChevronDown, Plus, Trash2, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
-export interface CategoryItem { id?: number; name: string }
+export interface CategoryItem { id?: number; name: string; icon?: string }
 
 interface Props {
   value: number | "";
   onChange: (id: number | "") => void;
   items: CategoryItem[] | undefined;
-  onCreate: (name: string) => Promise<number>;
+  onCreate: (name: string, icon?: string) => Promise<number>;
   onDelete: (id: number) => Promise<void>;
   placeholder?: string;
 }
@@ -18,6 +18,7 @@ export function CategoryPicker({ value, onChange, items, onCreate, onDelete, pla
   const [open, setOpen] = useState(false);
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState("");
+  const [newIcon, setNewIcon] = useState("");
   const [confirmId, setConfirmId] = useState<number | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
 
@@ -35,9 +36,9 @@ export function CategoryPicker({ value, onChange, items, onCreate, onDelete, pla
   async function handleCreate() {
     const n = newName.trim();
     if (!n) return;
-    const id = await onCreate(n);
+    const id = await onCreate(n, newIcon.trim() || undefined);
     onChange(id);
-    setNewName(""); setAdding(false); setOpen(false);
+    setNewName(""); setNewIcon(""); setAdding(false); setOpen(false);
   }
 
   async function handleDelete(id: number) {
@@ -54,7 +55,7 @@ export function CategoryPicker({ value, onChange, items, onCreate, onDelete, pla
         className="input-bz flex items-center justify-between text-left pr-4"
       >
         <span className={selected ? "" : "text-muted-foreground"}>
-          {selected?.name ?? placeholder ?? `— ${t("select")} —`}
+          {selected ? `${selected.icon ? selected.icon + " " : ""}${selected.name}` : (placeholder ?? `— ${t("select")} —`)}
         </span>
         <ChevronDown size={18} className={`text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
@@ -75,7 +76,9 @@ export function CategoryPicker({ value, onChange, items, onCreate, onDelete, pla
                     className="flex-1 flex items-center gap-2 px-4 py-3 text-left"
                   >
                     <Check size={16} className={active ? "text-primary" : "opacity-0"} />
-                    <span className={active ? "font-semibold text-primary" : ""}>{c.name}</span>
+                    <span className={active ? "font-semibold text-primary" : ""}>
+                      {c.icon ? `${c.icon} ` : ""}{c.name}
+                    </span>
                   </button>
                   <button
                     type="button"
@@ -101,6 +104,14 @@ export function CategoryPicker({ value, onChange, items, onCreate, onDelete, pla
               </button>
             ) : (
               <div className="flex gap-2">
+                <input
+                  className="input-bz text-center text-lg"
+                  style={{ height: 44, width: 56 }}
+                  maxLength={4}
+                  placeholder="🏷️"
+                  value={newIcon}
+                  onChange={(e) => setNewIcon(e.target.value)}
+                />
                 <input
                   autoFocus
                   className="input-bz flex-1"

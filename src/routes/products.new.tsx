@@ -22,6 +22,7 @@ export function ProductForm({ id }: { id?: number }) {
   const existingDiscs = useLiveQuery(async () => id ? await db.productTierDiscounts.where({ productId: id }).toArray() : [], [id]);
 
   const [name, setName] = useState("");
+  const [icon, setIcon] = useState("");
   const [categoryId, setCategoryId] = useState<number | "">("");
   const [realPrice, setRealPrice] = useState("");
   const [stockCount, setStockCount] = useState("0");
@@ -30,6 +31,7 @@ export function ProductForm({ id }: { id?: number }) {
   useEffect(() => {
     if (existing) {
       setName(existing.name);
+      setIcon(existing.icon ?? "");
       setCategoryId(existing.categoryId);
       setRealPrice(String(existing.realPrice));
       setStockCount(String(existing.stockCount));
@@ -46,6 +48,7 @@ export function ProductForm({ id }: { id?: number }) {
     const payload = {
       name: name.trim(), categoryId: Number(catId),
       realPrice: Number(realPrice), stockCount: Number(stockCount),
+      icon: icon.trim() || undefined,
     };
     let pid: number;
     if (id) {
@@ -71,14 +74,26 @@ export function ProductForm({ id }: { id?: number }) {
       </header>
 
       <div className="mt-6 flex flex-col gap-4">
-        <Field label={t("name")}><input className="input-bz" value={name} onChange={(e) => setName(e.target.value)} /></Field>
+        <div className="flex gap-3">
+          <Field label={t("icon")}>
+            <input
+              className="input-bz text-center text-xl"
+              style={{ width: 64 }}
+              maxLength={4}
+              value={icon}
+              onChange={(e) => setIcon(e.target.value)}
+              placeholder="🍽️"
+            />
+          </Field>
+          <div className="flex-1"><Field label={t("name")}><input className="input-bz" value={name} onChange={(e) => setName(e.target.value)} /></Field></div>
+        </div>
 
         <Field label={t("category")}>
           <CategoryPicker
             value={categoryId}
             onChange={setCategoryId}
             items={cats}
-            onCreate={async (n) => await db.productCategories.add({ name: n })}
+            onCreate={async (n, ic) => await db.productCategories.add({ name: n, icon: ic })}
             onDelete={async (cid) => { await db.productCategories.delete(cid); }}
           />
         </Field>

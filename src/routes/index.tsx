@@ -194,3 +194,38 @@ function relTime(t: number): string {
   if (d === 1) return "yesterday";
   return `${d} days ago`;
 }
+
+function FinancialChart({ series }: { series: number[] }) {
+  const W = 320, H = 140, P = 8;
+  if (series.length < 2) {
+    return (
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-full">
+        <path d={`M${P},${H / 2} L${W - P},${H / 2}`} stroke="var(--primary)" strokeWidth="1.5" fill="none" opacity="0.7" />
+      </svg>
+    );
+  }
+  const min = Math.min(...series, 0);
+  const max = Math.max(...series, 0);
+  const range = max - min || 1;
+  const stepX = (W - P * 2) / (series.length - 1);
+  const points = series.map((v, i) => {
+    const x = P + i * stepX;
+    const y = H - P - ((v - min) / range) * (H - P * 2);
+    return [x, y] as const;
+  });
+  // Smooth curve via quadratic midpoints
+  let d = `M${points[0][0]},${points[0][1]}`;
+  for (let i = 1; i < points.length; i++) {
+    const [px, py] = points[i - 1];
+    const [cx, cy] = points[i];
+    const mx = (px + cx) / 2;
+    const my = (py + cy) / 2;
+    d += ` Q${px},${py} ${mx},${my}`;
+  }
+  d += ` T${points[points.length - 1][0]},${points[points.length - 1][1]}`;
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-full" preserveAspectRatio="none">
+      <path d={d} stroke="var(--primary)" strokeWidth="1.5" fill="none" opacity="0.85" />
+    </svg>
+  );
+}

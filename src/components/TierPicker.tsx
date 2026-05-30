@@ -109,28 +109,30 @@ export function TierPicker({ value, onChange, items, onCreate, onDelete, placeho
                 <Plus size={16} /> {t("add")} {t("tier").toLowerCase()}
               </button>
             ) : (
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
                 <input
                   autoFocus
+                  dir="ltr"
                   className="input-bz flex-1"
-                  style={{ height: 44 }}
+                  style={{ height: 44, minWidth: 0 }}
                   placeholder={t("tier")}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
                 <input
                   type="number"
-                  className="input-bz w-20"
-                  style={{ height: 44 }}
+                  dir="ltr"
+                  className="input-bz w-16 shrink-0"
+                  style={{ height: 44, padding: "0 8px", textAlign: "center" }}
                   placeholder="%"
                   value={pct}
                   onChange={(e) => setPct(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleCreate(); } }}
                 />
-                <button type="button" onClick={handleCreate} className="h-11 px-3 rounded-lg bg-primary text-primary-foreground font-bold">
+                <button type="button" onClick={handleCreate} className="h-11 px-3 rounded-lg bg-primary text-primary-foreground font-bold shrink-0">
                   <Check size={16} />
                 </button>
-                <button type="button" onClick={() => { setAdding(false); setName(""); setPct(""); }} className="h-11 px-3 rounded-lg border border-border">
+                <button type="button" onClick={() => { setAdding(false); setName(""); setPct(""); }} className="h-11 px-3 rounded-lg border border-border shrink-0">
                   <X size={16} />
                 </button>
               </div>

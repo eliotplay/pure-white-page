@@ -91,12 +91,17 @@ const dict: Record<Lang, Record<string, string>> = {
 
 const LANG_KEY = "biztrack:lang";
 const NAME_KEY = "biztrack:username";
+const THEME_KEY = "biztrack:theme";
+
+export type Theme = "mono" | "neon" | "red";
 
 let _lang: Lang = "EN";
 let _name = "Owner";
+let _theme: Theme = "neon";
 if (typeof window !== "undefined") {
   _lang = (localStorage.getItem(LANG_KEY) as Lang) || "EN";
   _name = localStorage.getItem(NAME_KEY) || "Owner";
+  _theme = (localStorage.getItem(THEME_KEY) as Theme) || "neon";
 }
 
 const subs = new Set<() => void>();
@@ -116,6 +121,16 @@ export const setUsername = (n: string) => {
   notify();
 };
 
+export const getTheme = () => _theme;
+export const setTheme = (th: Theme) => {
+  _theme = th;
+  if (typeof window !== "undefined") {
+    localStorage.setItem(THEME_KEY, th);
+    document.documentElement.setAttribute("data-theme", th);
+  }
+  notify();
+};
+
 export function t(key: string): string {
   return dict[_lang][key] ?? key;
 }
@@ -126,5 +141,5 @@ export function useI18n() {
     subs.add(force);
     return () => { subs.delete(force); };
   }, []);
-  return { t, lang: _lang, setLang, username: _name, setUsername };
+  return { t, lang: _lang, setLang, username: _name, setUsername, theme: _theme, setTheme };
 }

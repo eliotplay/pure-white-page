@@ -44,6 +44,8 @@ const dict: Record<Lang, Record<string, string>> = {
     "icon": "Icon (Emoji)", "icon_help": "Optional emoji",
     "filter_all": "All", "growth_trajectory": "Growth trajectory",
     "this_week": "this week", "quantity": "Quantity",
+    "theme": "Theme", "theme_mono": "Black & White",
+    "theme_neon": "B&W + Neon Green", "theme_red": "B&W + Light Red",
   },
   ID: {
     "nav.home": "Beranda", "nav.orders": "Pesanan", "nav.contacts": "Klien",
@@ -86,6 +88,8 @@ const dict: Record<Lang, Record<string, string>> = {
     "icon": "Ikon (Emoji)", "icon_help": "Emoji opsional",
     "filter_all": "Semua", "growth_trajectory": "Pertumbuhan",
     "this_week": "minggu ini", "quantity": "Jumlah",
+    "theme": "Tema", "theme_mono": "Hitam & Putih",
+    "theme_neon": "Hitam Putih + Hijau Neon", "theme_red": "Hitam Putih + Merah Muda",
   },
 };
 

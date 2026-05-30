@@ -18,7 +18,7 @@ type ArchTab = "CONTACTS" | "PRODUCTS" | "ORDERS";
 
 function Settings() {
   const search = Route.useSearch();
-  const { t, lang, setLang } = useI18n();
+  const { t, lang, setLang, theme, setTheme } = useI18n();
   const [tab, setTab] = useState<Tab>(search.tab === "archive" ? "ARCHIVE" : "GENERAL");
 
   return (
@@ -39,6 +39,13 @@ function Settings() {
           <div className="flex gap-2">
             <button className={`chip flex-1 ${lang === "EN" ? "chip-active" : ""}`} onClick={() => setLang("EN")}>English</button>
             <button className={`chip flex-1 ${lang === "ID" ? "chip-active" : ""}`} onClick={() => setLang("ID")}>Bahasa Indonesia</button>
+          </div>
+
+          <div className="label-eyebrow mt-6 mb-3">{t("theme")}</div>
+          <div className="flex flex-col gap-2">
+            <button className={`chip w-full ${theme === "mono" ? "chip-active" : ""}`} onClick={() => setTheme("mono")}>{t("theme_mono")}</button>
+            <button className={`chip w-full ${theme === "neon" ? "chip-active" : ""}`} onClick={() => setTheme("neon")}>{t("theme_neon")}</button>
+            <button className={`chip w-full ${theme === "red" ? "chip-active" : ""}`} onClick={() => setTheme("red")}>{t("theme_red")}</button>
           </div>
 
           <div className="label-eyebrow mt-6 mb-3">{t("backup")}</div>

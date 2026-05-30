@@ -64,6 +64,14 @@ function Dashboard() {
     if (prevNet !== 0) growthPct = ((curNet - prevNet) / Math.abs(prevNet)) * 100;
     else if (curNet !== 0) growthPct = curNet > 0 ? 100 : -100;
 
+    // 7-day daily net series for the financial health curve
+    const dailyNets: number[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const from = now - (i + 1) * day;
+      const to = now - i * day;
+      dailyNets.push(netFor(from, to));
+    }
+
     const recent = [...orders].sort((a, b) => b.orderDate - a.orderDate).slice(0, 3);
     const contacts = await db.contacts.toArray();
     const recentEnriched = recent.map((o) => ({
@@ -72,7 +80,7 @@ function Dashboard() {
       total: orderRevenue(o.id!),
     }));
 
-    return { revenue, expenses, net: revenue - expenses, dueCount, recent: recentEnriched, growthPct };
+    return { revenue, expenses, net: revenue - expenses, dueCount, recent: recentEnriched, growthPct, dailyNets };
   }, [], null);
 
   return (
@@ -127,9 +135,7 @@ function Dashboard() {
 
       <div className="card-bz mt-3 relative overflow-hidden h-[140px]">
         <div className="absolute inset-0 opacity-40">
-          <svg viewBox="0 0 320 140" className="w-full h-full">
-            <path d="M0,90 Q60,60 120,70 T240,55 T320,75" stroke="oklch(0.93 0.27 135)" strokeWidth="1.5" fill="none" opacity="0.7" />
-          </svg>
+          <FinancialChart series={data?.dailyNets ?? []} />
         </div>
         <div className="absolute bottom-4 left-4 right-4">
           <div className="font-bold text-base">{t("financial_health")}</div>

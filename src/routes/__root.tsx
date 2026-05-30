@@ -1,10 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
-  Outlet, Link, createRootRouteWithContext, useRouter,
+  Outlet, Link, createRootRouteWithContext, useRouter, useRouterState, useNavigate,
   HeadContent, Scripts,
 } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { ensureSeed } from "@/lib/db";
+import { useAuth } from "@/hooks/use-auth";
 
 import appCss from "../styles.css?url";
 
@@ -81,7 +82,26 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  useEffect(() => { ensureSeed(); }, []);
+  const { user, loading } = useAuth();
+  const routerState = useRouterState();
+  const navigate = useNavigate();
+  const path = routerState.location.pathname;
+  const isAuthRoute = path === "/login" || path === "/signup";
+
+  useEffect(() => { if (user) ensureSeed(); }, [user]);
+  useEffect(() => {
+    if (loading) return;
+    if (!user && !isAuthRoute) navigate({ to: "/login", replace: true });
+  }, [user, loading, isAuthRoute, navigate]);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-sm text-muted-foreground">Memuat...</div>
+      </div>
+    );
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />

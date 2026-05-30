@@ -9,10 +9,12 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RemindersRouteImport } from './routes/reminders'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as MoreRouteImport } from './routes/more'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as InventoryRouteImport } from './routes/inventory'
 import { Route as FinanceRouteImport } from './routes/finance'
 import { Route as ExpensesRouteImport } from './routes/expenses'
@@ -29,6 +31,11 @@ import { Route as OrdersIdRouteImport } from './routes/orders.$id'
 import { Route as ContactsNewRouteImport } from './routes/contacts.new'
 import { Route as ContactsIdRouteImport } from './routes/contacts.$id'
 
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -47,6 +54,11 @@ const ProfileRoute = ProfileRouteImport.update({
 const MoreRoute = MoreRouteImport.update({
   id: '/more',
   path: '/more',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InventoryRoute = InventoryRouteImport.update({
@@ -132,10 +144,12 @@ export interface FileRoutesByFullPath {
   '/expenses': typeof ExpensesRoute
   '/finance': typeof FinanceRoute
   '/inventory': typeof InventoryRoute
+  '/login': typeof LoginRoute
   '/more': typeof MoreRoute
   '/profile': typeof ProfileRoute
   '/reminders': typeof RemindersRoute
   '/settings': typeof SettingsRoute
+  '/signup': typeof SignupRoute
   '/contacts/$id': typeof ContactsIdRoute
   '/contacts/new': typeof ContactsNewRoute
   '/orders/$id': typeof OrdersIdRoute
@@ -153,10 +167,12 @@ export interface FileRoutesByTo {
   '/expenses': typeof ExpensesRoute
   '/finance': typeof FinanceRoute
   '/inventory': typeof InventoryRoute
+  '/login': typeof LoginRoute
   '/more': typeof MoreRoute
   '/profile': typeof ProfileRoute
   '/reminders': typeof RemindersRoute
   '/settings': typeof SettingsRoute
+  '/signup': typeof SignupRoute
   '/contacts/$id': typeof ContactsIdRoute
   '/contacts/new': typeof ContactsNewRoute
   '/orders/$id': typeof OrdersIdRoute
@@ -175,10 +191,12 @@ export interface FileRoutesById {
   '/expenses': typeof ExpensesRoute
   '/finance': typeof FinanceRoute
   '/inventory': typeof InventoryRoute
+  '/login': typeof LoginRoute
   '/more': typeof MoreRoute
   '/profile': typeof ProfileRoute
   '/reminders': typeof RemindersRoute
   '/settings': typeof SettingsRoute
+  '/signup': typeof SignupRoute
   '/contacts/$id': typeof ContactsIdRoute
   '/contacts/new': typeof ContactsNewRoute
   '/orders/$id': typeof OrdersIdRoute
@@ -198,10 +216,12 @@ export interface FileRouteTypes {
     | '/expenses'
     | '/finance'
     | '/inventory'
+    | '/login'
     | '/more'
     | '/profile'
     | '/reminders'
     | '/settings'
+    | '/signup'
     | '/contacts/$id'
     | '/contacts/new'
     | '/orders/$id'
@@ -219,10 +239,12 @@ export interface FileRouteTypes {
     | '/expenses'
     | '/finance'
     | '/inventory'
+    | '/login'
     | '/more'
     | '/profile'
     | '/reminders'
     | '/settings'
+    | '/signup'
     | '/contacts/$id'
     | '/contacts/new'
     | '/orders/$id'
@@ -240,10 +262,12 @@ export interface FileRouteTypes {
     | '/expenses'
     | '/finance'
     | '/inventory'
+    | '/login'
     | '/more'
     | '/profile'
     | '/reminders'
     | '/settings'
+    | '/signup'
     | '/contacts/$id'
     | '/contacts/new'
     | '/orders/$id'
@@ -262,10 +286,12 @@ export interface RootRouteChildren {
   ExpensesRoute: typeof ExpensesRoute
   FinanceRoute: typeof FinanceRoute
   InventoryRoute: typeof InventoryRoute
+  LoginRoute: typeof LoginRoute
   MoreRoute: typeof MoreRoute
   ProfileRoute: typeof ProfileRoute
   RemindersRoute: typeof RemindersRoute
   SettingsRoute: typeof SettingsRoute
+  SignupRoute: typeof SignupRoute
   ContactsIdRoute: typeof ContactsIdRoute
   ContactsNewRoute: typeof ContactsNewRoute
   OrdersIdRoute: typeof OrdersIdRoute
@@ -279,6 +305,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -305,6 +338,13 @@ declare module '@tanstack/react-router' {
       path: '/more'
       fullPath: '/more'
       preLoaderRoute: typeof MoreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/inventory': {
@@ -422,10 +462,12 @@ const rootRouteChildren: RootRouteChildren = {
   ExpensesRoute: ExpensesRoute,
   FinanceRoute: FinanceRoute,
   InventoryRoute: InventoryRoute,
+  LoginRoute: LoginRoute,
   MoreRoute: MoreRoute,
   ProfileRoute: ProfileRoute,
   RemindersRoute: RemindersRoute,
   SettingsRoute: SettingsRoute,
+  SignupRoute: SignupRoute,
   ContactsIdRoute: ContactsIdRoute,
   ContactsNewRoute: ContactsNewRoute,
   OrdersIdRoute: OrdersIdRoute,

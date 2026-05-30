@@ -95,8 +95,8 @@ class BizTrackDB extends Dexie {
   expenseCategories!: Table<ExpenseCategory, number>;
   expenses!: Table<Expense, number>;
 
-  constructor() {
-    super("biztrack");
+  constructor(dbName: string) {
+    super(dbName);
     this.version(1).stores({
       contacts: "++id, name, isArchived",
       discountTiers: "++id, name",
@@ -112,7 +112,17 @@ class BizTrackDB extends Dexie {
   }
 }
 
-export const db = new BizTrackDB();
+// Per-user database isolation: each authenticated account gets its own
+// IndexedDB instance, completely separating data between users on the
+// same device. The user id is cached in localStorage by the auth layer
+// (see useAuth) and read here at module load.
+function currentDbName(): string {
+  if (typeof localStorage === "undefined") return "biztrack_anon";
+  const uid = localStorage.getItem("biztrack:uid");
+  return uid ? `biztrack_u_${uid}` : "biztrack_anon";
+}
+
+export const db = new BizTrackDB(currentDbName());
 
 let seeded = false;
 export async function ensureSeed() {

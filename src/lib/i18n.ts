@@ -44,6 +44,8 @@ const dict: Record<Lang, Record<string, string>> = {
     "icon": "Icon (Emoji)", "icon_help": "Optional emoji",
     "filter_all": "All", "growth_trajectory": "Growth trajectory",
     "this_week": "this week", "quantity": "Quantity",
+    "theme": "Theme", "theme_mono": "Black & White",
+    "theme_neon": "B&W + Neon Green", "theme_red": "B&W + Light Red",
   },
   ID: {
     "nav.home": "Beranda", "nav.orders": "Pesanan", "nav.contacts": "Klien",
@@ -86,17 +88,24 @@ const dict: Record<Lang, Record<string, string>> = {
     "icon": "Ikon (Emoji)", "icon_help": "Emoji opsional",
     "filter_all": "Semua", "growth_trajectory": "Pertumbuhan",
     "this_week": "minggu ini", "quantity": "Jumlah",
+    "theme": "Tema", "theme_mono": "Hitam & Putih",
+    "theme_neon": "Hitam Putih + Hijau Neon", "theme_red": "Hitam Putih + Merah Muda",
   },
 };
 
 const LANG_KEY = "biztrack:lang";
 const NAME_KEY = "biztrack:username";
+const THEME_KEY = "biztrack:theme";
+
+export type Theme = "mono" | "neon" | "red";
 
 let _lang: Lang = "EN";
 let _name = "Owner";
+let _theme: Theme = "neon";
 if (typeof window !== "undefined") {
   _lang = (localStorage.getItem(LANG_KEY) as Lang) || "EN";
   _name = localStorage.getItem(NAME_KEY) || "Owner";
+  _theme = (localStorage.getItem(THEME_KEY) as Theme) || "neon";
 }
 
 const subs = new Set<() => void>();
@@ -116,6 +125,16 @@ export const setUsername = (n: string) => {
   notify();
 };
 
+export const getTheme = () => _theme;
+export const setTheme = (th: Theme) => {
+  _theme = th;
+  if (typeof window !== "undefined") {
+    localStorage.setItem(THEME_KEY, th);
+    document.documentElement.setAttribute("data-theme", th);
+  }
+  notify();
+};
+
 export function t(key: string): string {
   return dict[_lang][key] ?? key;
 }
@@ -126,5 +145,5 @@ export function useI18n() {
     subs.add(force);
     return () => { subs.delete(force); };
   }, []);
-  return { t, lang: _lang, setLang, username: _name, setUsername };
+  return { t, lang: _lang, setLang, username: _name, setUsername, theme: _theme, setTheme };
 }

@@ -59,11 +59,7 @@ function ContactsPage() {
               <div className="flex-1 min-w-0">
                 <div className="font-bold truncate">{c.name}</div>
                 <div className="mt-1 inline-flex">
-                  {c.personalDiscountPercent != null ? (
-                    <span className="text-[10px] font-bold tracking-widest uppercase bg-primary/15 text-primary px-2 py-0.5 rounded">
-                      Override: {c.personalDiscountPercent}%
-                    </span>
-                  ) : tier ? (
+                  {tier ? (
                     <span className="text-[10px] font-bold tracking-widest uppercase bg-primary/15 text-primary px-2 py-0.5 rounded">
                       Tier: {tier.name}
                     </span>

@@ -64,6 +64,14 @@ function Dashboard() {
     if (prevNet !== 0) growthPct = ((curNet - prevNet) / Math.abs(prevNet)) * 100;
     else if (curNet !== 0) growthPct = curNet > 0 ? 100 : -100;
 
+    // 7-day daily net series for the financial health curve
+    const dailyNets: number[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const from = now - (i + 1) * day;
+      const to = now - i * day;
+      dailyNets.push(netFor(from, to));
+    }
+
     const recent = [...orders].sort((a, b) => b.orderDate - a.orderDate).slice(0, 3);
     const contacts = await db.contacts.toArray();
     const recentEnriched = recent.map((o) => ({
@@ -72,7 +80,7 @@ function Dashboard() {
       total: orderRevenue(o.id!),
     }));
 
-    return { revenue, expenses, net: revenue - expenses, dueCount, recent: recentEnriched, growthPct };
+    return { revenue, expenses, net: revenue - expenses, dueCount, recent: recentEnriched, growthPct, dailyNets };
   }, [], null);
 
   return (
@@ -127,9 +135,7 @@ function Dashboard() {
 
       <div className="card-bz mt-3 relative overflow-hidden h-[140px]">
         <div className="absolute inset-0 opacity-40">
-          <svg viewBox="0 0 320 140" className="w-full h-full">
-            <path d="M0,90 Q60,60 120,70 T240,55 T320,75" stroke="oklch(0.93 0.27 135)" strokeWidth="1.5" fill="none" opacity="0.7" />
-          </svg>
+          <FinancialChart series={data?.dailyNets ?? []} />
         </div>
         <div className="absolute bottom-4 left-4 right-4">
           <div className="font-bold text-base">{t("financial_health")}</div>
@@ -187,4 +193,39 @@ function relTime(t: number): string {
   const d = Math.floor(h / 24);
   if (d === 1) return "yesterday";
   return `${d} days ago`;
+}
+
+function FinancialChart({ series }: { series: number[] }) {
+  const W = 320, H = 140, P = 8;
+  if (series.length < 2) {
+    return (
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-full">
+        <path d={`M${P},${H / 2} L${W - P},${H / 2}`} stroke="var(--primary)" strokeWidth="1.5" fill="none" opacity="0.7" />
+      </svg>
+    );
+  }
+  const min = Math.min(...series, 0);
+  const max = Math.max(...series, 0);
+  const range = max - min || 1;
+  const stepX = (W - P * 2) / (series.length - 1);
+  const points = series.map((v, i) => {
+    const x = P + i * stepX;
+    const y = H - P - ((v - min) / range) * (H - P * 2);
+    return [x, y] as const;
+  });
+  // Smooth curve via quadratic midpoints
+  let d = `M${points[0][0]},${points[0][1]}`;
+  for (let i = 1; i < points.length; i++) {
+    const [px, py] = points[i - 1];
+    const [cx, cy] = points[i];
+    const mx = (px + cx) / 2;
+    const my = (py + cy) / 2;
+    d += ` Q${px},${py} ${mx},${my}`;
+  }
+  d += ` T${points[points.length - 1][0]},${points[points.length - 1][1]}`;
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-full" preserveAspectRatio="none">
+      <path d={d} stroke="var(--primary)" strokeWidth="1.5" fill="none" opacity="0.85" />
+    </svg>
+  );
 }
